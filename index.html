@@ -1,114 +1,157 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-    <title>الرئيسية</title>
-      <style>
-          body { font-family: Arial; direction: rtl; background: #f0f0f0; }
-              .header { text-align: center; padding: 10px; }
-                  .yellow-box { background: yellow; display:inline-block; padding: 5px 10px; margin:5px; }
-                      .blue-box { background: lightblue; display:inline-block; padding: 5px 10px; margin:5px; }
-                          .client { border: 1px solid #ccc; margin:10px; padding:10px; background:white; }
-                              .item { display:flex; justify-content:space-between; padding:5px; }
-                                  .bold { font-weight:bold; font-size:18px; }
-                                      .btn { padding:8px 15px; margin:5px; cursor:pointer; }
-                                        </style>
-                                        </head>
-                                        <body>
+  <title>فاتورة العملاء</title>
+  <style>
+    body {
+      font-family: "Tahoma", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f6fa;
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px;
+      gap: 10px;
+    }
+    .box {
+      flex: 1;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #fff;
+    }
+    .total { background: #3498db; }      /* أزرق */
+    .paid { background: #2ecc71; }       /* أخضر */
+    .remain { background: #e74c3c; }     /* أحمر */
+    
+    table {
+      width: 95%;
+      margin: 10px auto;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #f1f1f1;
+    }
+    tfoot td {
+      font-weight: bold;
+      background: #fafafa;
+    }
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .add { background: #2980b9; color: #fff; }
+    .pay { background: #27ae60; color: #fff; }
+  </style>
+</head>
+<body>
 
-                                          <div class="header">
-                                              <div class="yellow-box"> (صلي على النبي ﷺ) </div>
-                                                  <div class="blue-box"> مصطفى احمد مرتضى </div>
-                                                    </div>
+  <!-- المربعات العلوية -->
+  <header>
+    <div class="box total">إجمالي: <span id="total">0</span> ج.م</div>
+    <div class="box paid">مدفوع: <span id="paid">0</span> ج.م</div>
+    <div class="box remain">متبقي: <span id="remain">0</span> ج.م</div>
+  </header>
 
-                                                      <button class="btn" onclick="showForm()">➕ إضافة فاتورة</button>
+  <!-- جدول الفاتورة -->
+  <table id="invoiceTable">
+    <thead>
+      <tr>
+        <th>العدد</th>
+        <th>الصنف</th>
+        <th>سعر الوحدة</th>
+        <th>الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">الإجمالي الكلي</td>
+        <td id="grandTotal">0</td>
+      </tr>
+    </tfoot>
+  </table>
 
-                                                        <div id="form" style="display:none; background:#fff; padding:10px; margin:10px;">
-                                                            <h3>إضافة صنف</h3>
-                                                                <div id="items"></div>
-                                                                    <button class="btn" onclick="addItem()">➕ إضافة صنف جديد</button>
-                                                                        <hr>
-                                                                            <button class="btn" onclick="calculate()">= احسب</button>
-                                                                                <div id="total" class="bold"></div>
-                                                                                    <button class="btn" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
-                                                                                      </div>
+  <!-- الأزرار -->
+  <div class="actions">
+    <button class="add" onclick="addItem()">➕ إضافة صنف</button>
+    <button class="pay" onclick="addPayment()">💳 تسجيل دفعة</button>
+  </div>
 
-                                                                                        <h3>📋 قائمة العملاء</h3>
-                                                                                          <div id="clients"></div>
+  <script>
+    let total = 0;
+    let paid = 0;
 
-                                                                                            <script>
-                                                                                                let items = [];
-                                                                                                    let clients = JSON.parse(localStorage.getItem("clients") || "[]");
+    function updateBoxes() {
+      document.getElementById("total").textContent = total;
+      document.getElementById("paid").textContent = paid;
+      document.getElementById("remain").textContent = total - paid;
+      document.getElementById("grandTotal").textContent = total;
+    }
 
-                                                                                                        function showForm() {
-                                                                                                              document.getElementById("form").style.display = "block";
-                                                                                                                    items = [];
-                                                                                                                          document.getElementById("items").innerHTML = "";
-                                                                                                                                document.getElementById("total").innerHTML = "";
-                                                                                                                                    }
+    function addItem() {
+      const qty = prompt("أدخل العدد:");
+      const item = prompt("أدخل اسم الصنف:");
+      const price = prompt("أدخل سعر الوحدة:");
 
-                                                                                                                                        function addItem() {
-                                                                                                                                              const id = Date.now();
-                                                                                                                                                    items.push({id, name:"", qty:0, price:0});
-                                                                                                                                                          renderItems();
-                                                                                                                                                              }
+      if (!qty || !item || !price) return;
 
-                                                                                                                                                                  function renderItems() {
-                                                                                                                                                                        const container = document.getElementById("items");
-                                                                                                                                                                              container.innerHTML = "";
-                                                                                                                                                                                    items.forEach(it => {
-                                                                                                                                                                                            container.innerHTML += `
-                                                                                                                                                                                                      <div class="item">
-                                                                                                                                                                                                                  <input placeholder="الصنف" onchange="updateItem(${it.id}, 'name', this.value)">
-                                                                                                                                                                                                                              <input type="number" placeholder="العدد" onchange="updateItem(${it.id}, 'qty', this.value)">
-                                                                                                                                                                                                                                          <input type="number" placeholder="السعر" onchange="updateItem(${it.id}, 'price', this.value)">
-                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                            `;
-                                                                                                                                                                                                                                                                  });
-                                                                                                                                                                                                                                                                      }
+      const row = document.createElement("tr");
+      const subtotal = qty * price;
 
-                                                                                                                                                                                                                                                                          function updateItem(id, field, value) {
-                                                                                                                                                                                                                                                                                const item = items.find(i => i.id === id);
-                                                                                                                                                                                                                                                                                      item[field] = field === "name" ? value : Number(value);
-                                                                                                                                                                                                                                                                                          }
+      row.innerHTML = `
+        <td>${qty}</td>
+        <td>${item}</td>
+        <td>${price}</td>
+        <td>${subtotal}</td>
+      `;
 
-                                                                                                                                                                                                                                                                                              function calculate() {
-                                                                                                                                                                                                                                                                                                    let total = 0;
-                                                                                                                                                                                                                                                                                                          items.forEach(it => total += it.qty * it.price);
-                                                                                                                                                                                                                                                                                                                document.getElementById("total").innerHTML = "الإجمالي: " + total + " ج.م";
-                                                                                                                                                                                                                                                                                                                      return total;
-                                                                                                                                                                                                                                                                                                                          }
+      document.querySelector("#invoiceTable tbody").appendChild(row);
 
-                                                                                                                                                                                                                                                                                                                              function saveInvoice() {
-                                                                                                                                                                                                                                                                                                                                    const total = calculate();
-                                                                                                                                                                                                                                                                                                                                          const client = {
-                                                                                                                                                                                                                                                                                                                                                  id: Date.now(),
-                                                                                                                                                                                                                                                                                                                                                          items,
-                                                                                                                                                                                                                                                                                                                                                                  total,
-                                                                                                                                                                                                                                                                                                                                                                          date: new Date().toLocaleString()
-                                                                                                                                                                                                                                                                                                                                                                                };
-                                                                                                                                                                                                                                                                                                                                                                                      clients.push(client);
-                                                                                                                                                                                                                                                                                                                                                                                            localStorage.setItem("clients", JSON.stringify(clients));
-                                                                                                                                                                                                                                                                                                                                                                                                  renderClients();
-                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById("form").style.display = "none";
-                                                                                                                                                                                                                                                                                                                                                                                                            }
+      total += subtotal;
+      updateBoxes();
+    }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                function renderClients() {
-                                                                                                                                                                                                                                                                                                                                                                                                                      const container = document.getElementById("clients");
-                                                                                                                                                                                                                                                                                                                                                                                                                            container.innerHTML = "";
-                                                                                                                                                                                                                                                                                                                                                                                                                                  clients.forEach(c => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                          container.innerHTML += `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="client">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                <b>فاتورة بتاريخ:</b> ${c.date}<br>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ${c.items.map(it => `${it.name} - ${it.qty} × ${it.price} = ${it.qty*it.price} ج.م`).join("<br>")}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <hr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="bold">الإجمالي: ${c.total} ج.م</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      `;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+    function addPayment() {
+      const amount = prompt("أدخل قيمة الدفعة:");
+      if (!amount) return;
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    renderClients();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </script>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </html>
+      paid += Number(amount);
+      updateBoxes();
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td colspan="3">💳 دفعة (${new Date().toLocaleDateString()})</td>
+        <td>- ${amount}</td>
+      `;
+      document.querySelector("#invoiceTable tbody").appendChild(row);
+    }
+  </script>
+
+</body>
+</html>

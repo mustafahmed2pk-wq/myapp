@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+    <title>تسجيل الدخول</title>
+      <script type="module">
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+              import { 
+                    getAuth, 
+                          signInWithEmailAndPassword,
+                                createUserWithEmailAndPassword,
+                                      sendPasswordResetEmail
+                                          } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+                                              // 🔹 إعدادات Firebase (غيّرها بالقيم بتاعتك من Firebase Console)
+                                                  const firebaseConfig = {
+                                                        apiKey: "YOUR_API_KEY",
+                                                              authDomain: "YOUR_PROJECT.firebaseapp.com",
+                                                                    projectId: "YOUR_PROJECT_ID",
+                                                                          storageBucket: "YOUR_PROJECT.appspot.com",
+                                                                                messagingSenderId: "YOUR_SENDER_ID",
+                                                                                      appId: "YOUR_APP_ID"
+                                                                                          };
+
+                                                                                              const app = initializeApp(firebaseConfig);
+                                                                                                  const auth = getAuth(app);
+
+                                                                                                      window.login = function() {
+                                                                                                            const email = document.getElementById("email").value;
+                                                                                                                  const password = document.getElementById("password").value;
+
+                                                                                                                        signInWithEmailAndPassword(auth, email, password)
+                                                                                                                                .then(() => {
+                                                                                                                                          localStorage.setItem("loggedIn", "true"); // ✅ تخزين الدخول
+                                                                                                                                                    window.location.href = "index.html";
+                                                                                                                                                            })
+                                                                                                                                                                    .catch(err => alert("خطأ: " + err.message));
+                                                                                                                                                                        }
+
+                                                                                                                                                                            window.signup = function() {
+                                                                                                                                                                                  const email = document.getElementById("email").value;
+                                                                                                                                                                                        const password = document.getElementById("password").value;
+
+                                                                                                                                                                                              createUserWithEmailAndPassword(auth, email, password)
+                                                                                                                                                                                                      .then(() => alert("تم إنشاء الحساب بنجاح ✅"))
+                                                                                                                                                                                                              .catch(err => alert("خطأ: " + err.message));
+                                                                                                                                                                                                                  }
+
+                                                                                                                                                                                                                      window.resetPassword = function() {
+                                                                                                                                                                                                                            const email = document.getElementById("email").value;
+                                                                                                                                                                                                                                  if (!email) return alert("أدخل بريدك الإلكتروني أولاً");
+                                                                                                                                                                                                                                        sendPasswordResetEmail(auth, email)
+                                                                                                                                                                                                                                                .then(() => alert("تم إرسال رابط استعادة كلمة السر ✉️"))
+                                                                                                                                                                                                                                                        .catch(err => alert("خطأ: " + err.message));
+                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                              </script>
+                                                                                                                                                                                                                                                              </head>
+                                                                                                                                                                                                                                                              <body style="font-family: Arial; text-align:center; direction: rtl;">
+
+                                                                                                                                                                                                                                                                <h2>تسجيل الدخول</h2>
+
+                                                                                                                                                                                                                                                                  <input id="email" type="email" placeholder="الإيميل"><br><br>
+                                                                                                                                                                                                                                                                    <input id="password" type="password" placeholder="كلمة السر"><br><br>
+
+                                                                                                                                                                                                                                                                      <button onclick="login()">دخول</button>
+                                                                                                                                                                                                                                                                        <button onclick="signup()">إنشاء حساب</button><br><br>
+                                                                                                                                                                                                                                                                          <a href="#" onclick="resetPassword()">نسيت كلمة السر؟</a>
+
+                                                                                                                                                                                                                                                                          </body>
+                                                                                                                                                                                                                                                                          </html>
